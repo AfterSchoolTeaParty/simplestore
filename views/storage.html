@@ -1,0 +1,45 @@
+{%extends "layout.html"%}
+
+{%block head%}
+<title>{{pagetitle}}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+
+{%endblock%}
+
+{%block body%}
+<div class="container-fluid no-overflow">
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-5">
+            <h1 class="text-center">{{pagetitle}} Storage</h1>
+            <form action="" enctype="multipart/form-data" method="post" class="input-group">
+                <input type="file" name="file" class="form-control">
+                <button type="submit" class="btn btn-primary">Add</button>
+            </form>
+            <br>
+        </div>
+    </div>
+    <div class="container">
+        <hr>
+        <h1>Your Files</h1>
+        <div class="row">
+            {%for item in storage.items()%}
+            <div class="col-md-3 mt-3 d-flex flex-column align-items-center">
+                <a href="{{url_for('static', filename='storages/'+storage.name+'_'+item)}}" class="d-flex flex-column align-items-center">
+                    <img src="{{url_for('static', filename='img/files.svg')}}" class="logo">
+                    <h5 class="card-title">{{item}}</h5>
+                </a>
+                <form action="" method="post" class="mt-2">
+                    <input type="text" name="filename" value="{{item}}" hidden>
+                    <button type="submit" class="btn btn-danger">delete</button>
+                </form>
+            </div>
+            {%endfor%}            
+        </div>
+    
+    </div>
+</div>
+
+{%endblock%}

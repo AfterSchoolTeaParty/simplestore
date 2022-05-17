@@ -1,0 +1,13 @@
+.logo {
+    height: 100px;
+    width: 100px;
+}
+
+a{
+    text-decoration: none!important;
+    color: inherit!important;
+}
+
+.no-overflow{
+    overflow: hidden;
+}

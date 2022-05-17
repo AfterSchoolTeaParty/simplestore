@@ -1,0 +1,33 @@
+{%extends "layout.html"%}
+
+{%block head%}
+<title>SimpleStore</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+{%endblock%}
+
+{%block body%}
+<div class="row mt-5 justify-content-center fs-5">
+    <div class="col-md-5">
+        <h1 class="fs-1">Welcome to SimpleStore</h1>
+        <p>Simplestore is an online file storage where you can save lightweight files temporarily. This website is hugely inspired by <a href="https://www.protectedtext.com/">protectedtext.com</a> eventhough it's still not secure as protectedtext. If you want to create a new storage just enter add "/yourstorage" after our domain or you can use the input box below</p>
+
+        <form action="" method="GET" class="input-group">
+            <input type="text" name="storage" class="form-control">
+            <button type="submit" class="btn btn-primary">Go!</button>
+        </form>
+        <div class="mt-5">
+            <h1 class="fs-3">Features & Future Update(Maybe)</h1>
+            <ol>
+                <li>Every files that's uploaded has lifespan for 1 hour</li>
+                <li>Security will be updated soon</li>
+                <li>Better UI in the future</li>
+                <li>Better Authentication (Without session)</li>
+                <li>Adding text-editor feature</li>
+                <li>Using database</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+{%endblock%}
