@@ -3,6 +3,7 @@ import settings
 import os
 import shutil
 from datetime import datetime
+import requests
 
 app = Flask(__name__, template_folder="views", static_folder="media", static_url_path="/media")
 app.secret_key = "apa ini anjir"
@@ -14,33 +15,82 @@ if os.path.isdir(settings.STORAGES_DIR):
 else:
     os.mkdir(settings.STORAGES_DIR)
 
-"""
-ToDo: Create Database of File and Storage
-Storage Model should has name, passkey
-File Model should has name, path, uploaded, foreign key to storage
-"""
-stores = {}
-files = {}
-
 class Storage:
     def __init__(self, name, passkey):
         self.name = name
         self.passkey = passkey
         self.files = {}
+        self.refresh()
+
+    def refresh(self):
+        requests.post(f"{settings.DATABASE_API_URL}/storages", data={"name" : self.name, "passkey" : self.passkey})    
 
     def items(self):
         return [file.replace(f"{self.name}_", "") for file in os.listdir(settings.STORAGES_DIR) if file.startswith(self.name)]
 
-class File:
-    def __init__(self, name, path):
-        self.name = name
-        self.path = path
-        self.uploaded = datetime.now()
+    @staticmethod
+    def get(name=None):
+        if name:
+            try:
+                return requests.get(f"{settings.DATABASE_API_URL}/storages/{name}").json()
+            except:
+                return requests.get(f"{settings.DATABASE_API_URL}/storages").json()
+        else:
+            return requests.get(f"{settings.DATABASE_API_URL}/storages").json()
 
+
+class File:
+    def __init__(self, name, storage, uploaded = None):
+        self.name = name
+        self.filename = "".join(self.name.split(".")[:-1])
+        self.fileext = self.name.split(".")[-1]
+        self.path = os.path.join(settings.STORAGES_DIR, f"{storage}_{self.name}")
+        self.storage = storage
+        if uploaded:
+            self.uploaded = float(uploaded)
+        else:
+            self.uploaded = datetime.now().timestamp()
+
+        self.refresh()
+
+    def refresh(self):
+        requests.post(f"{settings.DATABASE_API_URL}/files", data={"name" : self.filename, "storage" : self.storage, "extension" :  self.fileext, "uploaded" : self.uploaded})
+
+    
     def delete(self):
         os.remove(self.path)
 
+    @staticmethod
+    def get(name=None):
+        if name:
+            try:
+                return requests.get(f"{settings.DATABASE_API_URL}/files/{name}").json()
+            except:
+                return requests.get(f"{settings.DATABASE_API_URL}/files").json()
+        else:
+            return requests.get(f"{settings.DATABASE_API_URL}/files").json()
 
+    
+# Checking the existence of data
+database_data_storages = requests.get(f"{settings.DATABASE_API_URL}/storages").json()
+if database_data_storages:
+    database_data_storages = list(database_data_storages.values())
+else:
+    database_data_storages = []
+
+database_data_files = requests.get(f"{settings.DATABASE_API_URL}/files").json()
+if database_data_files:
+    database_data_files = list(database_data_files.values())
+else:
+    database_data_files = []
+
+stores = {}
+for storage in database_data_storages:
+    stores[storage["name"]] = Storage(storage["name"], storage["passkey"])
+
+files = {}
+for file in database_data_files:
+    files[file["file"]] = File(file["file"], file["storage"], file["uploaded"])
 
 
 @app.route("/", methods=["GET"])
@@ -49,7 +99,6 @@ def index():
         return redirect(url_for("storage", name=request.args.get("storage")))
     context = {}
     return render_template("index.html", **context)
-
 
 @app.route("/<name>", methods=["POST", "GET"])
 def storage(name):
@@ -76,7 +125,7 @@ def storage(name):
 
     buffer_ = files.copy()
     for file in buffer_:
-        if files[file].uploaded.hour != datetime.now().hour:
+        if datetime.fromtimestamp(files[file].uploaded).hour != datetime.now().hour:
             files[file].delete()
             del files[file]
 
@@ -84,7 +133,7 @@ def storage(name):
         if request.files.get('file'):
             file = request.files.get("file")
             file.save(os.path.join(settings.STORAGES_DIR, f"{context['storage'].name}_{file.filename}"))
-            filebuf = File(file.filename, os.path.join(settings.STORAGES_DIR, f"{context['storage'].name}_{file.filename}"))
+            filebuf = File(file.filename, context["storage"].name)
             context["storage"].files[file.filename] = filebuf
             files[file.filename] = filebuf
         if request.form.get("filename"):
@@ -96,4 +145,4 @@ def storage(name):
     return render_template("storage.html", **context)
 
 if __name__ == "__main__":
-    app.run(port=3000, host="0.0.0.0", debug=True)
+    app.run(port=8000, host="0.0.0.0", debug=True)
